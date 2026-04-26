@@ -1,66 +1,51 @@
-"""
-enums.py — Shared string enums for Humantic AI.
-
-Using str-based enums means values serialize cleanly to JSON strings
-(e.g., "completed") without any extra config.
-"""
-
 from enum import Enum
 
 
-class TopicStatus(str, Enum):
-    """Lifecycle states of a research topic."""
-    queued      = "queued"        # Just submitted, waiting for a worker
-    researching = "researching"   # Celery task is actively running
-    completed   = "completed"     # All cycles finished, findings saved
-    failed      = "failed"        # Pipeline errored out (partial results may exist)
-
-
-class FindingCategory(str, Enum):
-    """Category of a research finding."""
-    deep_insight = "deep_insight"   # Substantive finding backed by multiple sources
-    trend        = "trend"          # Emerging movement or shift in the field
-    opportunity  = "opportunity"    # Actionable gap or possibility
-    experimental = "experimental"   # Speculative early signal, worth watching
-
-
-class ConfidenceLevel(str, Enum):
-    """How confident the AI is in a finding."""
-    high        = "high"        # Supported by multiple strong sources
-    medium      = "medium"      # Reasonable evidence, some gaps
-    speculative = "speculative" # Early signal, single source, or inferred
-
-
-class FindingStatus(str, Enum):
-    """User's review decision on a finding."""
-    new       = "new"       # Not yet reviewed
-    approved  = "approved"  # User accepted / found useful
-    dismissed = "dismissed" # User rejected
-
-
 class UserDomain(str, Enum):
-    """The user's professional role, inferred during onboarding."""
     consultant = "consultant"
-    analyst    = "analyst"
-    pm         = "pm"
-    other      = "other"
+    analyst = "analyst"
+    product_manager = "product_manager"
+    researcher = "researcher"
+    other = "other"
 
 
 class ResearchDepth(str, Enum):
-    """How detailed the user wants research output to be."""
     quick_summaries = "quick_summaries"
-    deep_dives      = "deep_dives"
-    balanced        = "balanced"
+    balanced = "balanced"
+    deep_dives = "deep_dives"
+
+
+class TopicStatus(str, Enum):
+    queued = "queued"
+    researching = "researching"
+    completed = "completed"
+    failed = "failed"
+
+
+class FindingCategory(str, Enum):
+    deep_insight = "deep_insight"
+    trend = "trend"
+    opportunity = "opportunity"
+    experimental = "experimental"
+
+
+class FindingStatus(str, Enum):
+    new = "new"
+    approved = "approved"
+    dismissed = "dismissed"
+
+
+class ConfidenceLevel(str, Enum):
+    high = "high"
+    medium = "medium"
+    speculative = "speculative"
 
 
 class ActionType(str, Enum):
-    """Valid action_type values for the interaction_logs table (M7 foundation)."""
-    query               = "query"
-    view_finding        = "view_finding"
-    approve             = "approve"
-    dismiss             = "dismiss"
-    pin_add             = "pin_add"
-    pin_remove          = "pin_remove"
-    follow_up           = "follow_up"
-    onboarding_complete = "onboarding_complete"
-    why_this_expand     = "why_this_expand"
+    research_submitted = "research_submitted"
+    finding_viewed = "finding_viewed"
+    finding_approved = "finding_approved"
+    finding_dismissed = "finding_dismissed"
+    pin_added = "pin_added"
+    pin_removed = "pin_removed"
+    followup_asked = "followup_asked"

@@ -22,5 +22,5 @@ app.include_router(ws.router, tags=["WebSocket"])
 
 
 @app.get("/")
-async def health_check():
-    return {"status": "ok", "app": "Humantic AI", "version": "0.1.0"}
+async def root():
+    return {"status": "ok", "message": "Humantic AI is running"}
