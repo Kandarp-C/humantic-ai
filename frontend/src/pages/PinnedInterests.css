@@ -1,0 +1,83 @@
+.pinned-page {
+  padding: 100px 24px 60px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.pinned-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+.pinned-header h1 {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.pins-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.pin-card {
+  padding: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+}
+
+.pin-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pin-description {
+  font-size: 16px;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.pin-meta {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.pin-actions {
+  display: flex;
+  gap: 12px;
+}
+
+/* Modal Styling */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.modal-content {
+  width: 100%;
+  max-width: 500px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.modal-header h2 {
+  font-size: 20px;
+  font-weight: 700;
+}

@@ -1,0 +1,43 @@
+.category-filter {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 4px;
+  margin-bottom: 24px;
+  scrollbar-width: none;
+}
+
+.category-filter::-webkit-scrollbar {
+  display: none;
+}
+
+.filter-pill {
+  padding: 8px 16px;
+  border-radius: var(--radius-pill);
+  background: var(--glass-light);
+  border: 1px solid var(--border-glass);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+
+.filter-pill:hover {
+  background: var(--glass);
+  color: var(--text-primary);
+}
+
+.filter-pill.active {
+  color: var(--text-primary);
+  border-color: var(--accent-primary);
+  background: var(--glow-primary);
+  box-shadow: 0 0 15px var(--glow-primary);
+}
+
+/* Specific glows for categories when active */
+.filter-pill.active.insights { box-shadow: 0 0 15px rgba(108, 99, 255, 0.2); border-color: var(--accent-primary); }
+.filter-pill.active.trends { box-shadow: 0 0 15px rgba(0, 180, 216, 0.2); border-color: var(--accent-cyan); }
+.filter-pill.active.opportunities { box-shadow: 0 0 15px rgba(0, 212, 170, 0.2); border-color: var(--accent-secondary); }
+.filter-pill.active.experimental { box-shadow: 0 0 15px rgba(255, 179, 71, 0.2); border-color: var(--accent-warning); }
