@@ -4,7 +4,14 @@ import ResearchInput from '../components/research/ResearchInput';
 import TopicCard from '../components/research/TopicCard';
 import CategoryFilter from '../components/findings/CategoryFilter';
 import FindingCard from '../components/findings/FindingCard';
-import api from '../services/api';
+import { 
+  getResearch, 
+  getFindings, 
+  submitResearch, 
+  updateFinding 
+} from '../services/api';
+import BookShelfAnimation from '../components/ui/BookShelfAnimation';
+import DataCableAnimation from '../components/ui/DataCableAnimation';
 import './Dashboard.css';
 
 import useWebSocket from '../hooks/useWebSocket';
@@ -18,7 +25,7 @@ const Dashboard = () => {
   const { lastMessage } = useWebSocket('ws://localhost:8000/ws/findings');
 
   useEffect(() => {
-    if (lastMessage && lastMessage.type === 'NEW_FINDING') {
+    if (lastMessage && lastMessage.type === 'new_finding') {
       setFindings(prev => [lastMessage.data, ...prev]);
     }
   }, [lastMessage]);
@@ -27,8 +34,8 @@ const Dashboard = () => {
     const fetchData = async () => {
       try {
         const [topicsRes, findingsRes] = await Promise.all([
-          api.get('/api/research'),
-          api.get('/api/findings')
+          getResearch(),
+          getFindings()
         ]);
         setTopics(topicsRes.data);
         setFindings(findingsRes.data);
@@ -44,38 +51,28 @@ const Dashboard = () => {
 
   const handleResearchSubmit = async (data) => {
     try {
-      const response = await api.post('/api/research', data);
+      const response = await submitResearch(data.topic, data.goal);
       setTopics([response.data, ...topics]);
     } catch (error) {
-      // Mock update for demo
-      const newTopic = {
-        id: Date.now().toString(),
-        title: data.topic,
-        status: 'pending',
-        cycles: 0,
-        createdAt: new Date().toISOString()
-      };
-      setTopics([newTopic, ...topics]);
+      console.error('Failed to submit research', error);
     }
   };
 
   const handleApproveFinding = async (id) => {
     try {
-      await api.patch(`/api/findings/${id}`, { status: 'approved' });
+      await updateFinding(id, 'approved');
       setFindings(findings.filter(f => f.id !== id));
     } catch (error) {
-      // Mock update
-      setFindings(findings.filter(f => f.id !== id));
+      console.error('Failed to approve finding', error);
     }
   };
 
   const handleDismissFinding = async (id) => {
     try {
-      await api.patch(`/api/findings/${id}`, { status: 'dismissed' });
+      await updateFinding(id, 'dismissed');
       setFindings(findings.filter(f => f.id !== id));
     } catch (error) {
-      // Mock update
-      setFindings(findings.filter(f => f.id !== id));
+      console.error('Failed to dismiss finding', error);
     }
   };
 
@@ -85,8 +82,20 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-page">
-      <section className="input-section">
-        <ResearchInput onSubmit={handleResearchSubmit} />
+      <section className="input-section-container">
+        <div className="input-with-animations">
+          <div className="side-animation hide-mobile">
+            <BookShelfAnimation />
+          </div>
+          
+          <div className="main-input-wrapper">
+            <ResearchInput onSubmit={handleResearchSubmit} />
+          </div>
+          
+          <div className="side-animation hide-mobile">
+            <BookShelfAnimation />
+          </div>
+        </div>
       </section>
 
       <section className="active-research-section">
@@ -101,31 +110,43 @@ const Dashboard = () => {
         </div>
       </section>
 
-      <section className="findings-feed-section">
-        <h2>Recent Findings</h2>
-        <CategoryFilter 
-          activeCategory={activeCategory} 
-          onCategoryChange={setActiveCategory} 
-        />
-        
-        <div className="findings-feed">
-          <AnimatePresence mode="popLayout">
-            {filteredFindings.map(finding => (
-              <FindingCard 
-                key={finding.id} 
-                finding={finding} 
-                onApprove={handleApproveFinding}
-                onDismiss={handleDismissFinding}
-              />
-            ))}
-          </AnimatePresence>
-          
-          {filteredFindings.length === 0 && !isLoading && (
-            <div className="empty-state">
-              No {activeCategory !== 'All' ? activeCategory.toLowerCase() : ''} findings yet. 
-              Research runs overnight.
+      <section className="findings-section-container">
+        <div className="feed-with-animations">
+          <div className="side-animation hide-mobile">
+            <DataCableAnimation />
+          </div>
+
+          <div className="findings-feed-wrapper">
+            <h2 className="section-title">Recent Findings</h2>
+            <CategoryFilter 
+              activeCategory={activeCategory} 
+              onCategoryChange={setActiveCategory} 
+            />
+            
+            <div className="findings-feed">
+              <AnimatePresence mode="popLayout">
+                {filteredFindings.map(finding => (
+                  <FindingCard 
+                    key={finding.id} 
+                    finding={finding} 
+                    onApprove={handleApproveFinding}
+                    onDismiss={handleDismissFinding}
+                  />
+                ))}
+              </AnimatePresence>
+              
+              {filteredFindings.length === 0 && !isLoading && (
+                <div className="empty-state">
+                  No {activeCategory !== 'All' ? activeCategory.toLowerCase() : ''} findings yet. 
+                  Research runs overnight.
+                </div>
+              )}
             </div>
-          )}
+          </div>
+
+          <div className="side-animation hide-mobile">
+            <DataCableAnimation />
+          </div>
         </div>
       </section>
     </div>

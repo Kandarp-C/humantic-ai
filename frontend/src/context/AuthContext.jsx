@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import api from '../services/api';
+import api, { login as apiLogin, signup as apiSignup } from '../services/api';
 
 const AuthContext = createContext();
 
@@ -13,11 +13,7 @@ export const AuthProvider = ({ children }) => {
       const token = localStorage.getItem('humantic_token');
       if (token) {
         try {
-          // In a real app, you might have a /me endpoint to verify the token
-          // const response = await api.get('/api/auth/me');
-          // setUser(response.data.user);
-          
-          // For now, we'll assume it's valid if present (MVP logic)
+          // Verify token/session if possible, or just trust it for MVP
           setIsAuthenticated(true);
         } catch (error) {
           localStorage.removeItem('humantic_token');
@@ -31,20 +27,18 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      // Real API call
-      // const response = await api.post('/api/auth/login', { email, password });
-      // const { token, user } = response.data;
+      const response = await apiLogin(email, password);
+      const { session, user: userData } = response.data;
       
-      // Mock Login for now
-      const mockToken = 'mock_jwt_token_123';
-      const mockUser = { email, id: 'u1' };
-      
-      localStorage.setItem('humantic_token', mockToken);
-      setUser(mockUser);
-      setIsAuthenticated(true);
-      return { success: true };
+      if (session?.access_token) {
+        localStorage.setItem('humantic_token', session.access_token);
+        setUser(userData);
+        setIsAuthenticated(true);
+        return { success: true };
+      }
+      throw new Error('No session returned');
     } catch (error) {
-      return { success: false, error: error.response?.data?.message || 'Login failed' };
+      return { success: false, error: error.response?.data?.detail || error.message || 'Login failed' };
     }
   };
 
@@ -56,11 +50,18 @@ export const AuthProvider = ({ children }) => {
 
   const signup = async (email, password) => {
     try {
-      // const response = await api.post('/api/auth/signup', { email, password });
-      // Mock Signup
-      return login(email, password);
+      const response = await apiSignup(email, password);
+      const { session, user: userData } = response.data;
+      
+      if (session?.access_token) {
+        localStorage.setItem('humantic_token', session.access_token);
+        setUser(userData);
+        setIsAuthenticated(true);
+        return { success: true };
+      }
+      return { success: true }; // Signup successful but maybe needs email verify
     } catch (error) {
-      return { success: false, error: error.response?.data?.message || 'Signup failed' };
+      return { success: false, error: error.response?.data?.detail || error.message || 'Signup failed' };
     }
   };
 

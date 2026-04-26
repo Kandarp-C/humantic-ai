@@ -5,7 +5,7 @@ import GlassPanel from '../components/ui/GlassPanel';
 import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-import api from '../services/api';
+import { getFindingById, submitResearch } from '../services/api';
 import './FindingPage.css';
 
 const FindingPage = () => {
@@ -18,39 +18,10 @@ const FindingPage = () => {
   useEffect(() => {
     const fetchFinding = async () => {
       try {
-        const response = await api.get(`/api/findings/${id}`);
+        const response = await getFindingById(id);
         setFinding(response.data);
       } catch (error) {
-        // Mock data fallback
-        setFinding({
-          id,
-          title: 'Market Shift in Enterprise AI Adoption',
-          category: 'Insights',
-          confidence: 'HIGH',
-          timestamp: '2h ago',
-          content: `
-# Analysis Report: Enterprise AI Shift
-
-Large-scale enterprises are moving from experimentation to production-ready AI agents. This shift is characterized by three main pillars:
-
-1. **ROI-Focused Procurement**: Companies are no longer buying "AI capabilities" but "AI outcomes".
-2. **Security-First Architecture**: Deployment is happening in VPCs and on-premise rather than public clouds.
-3. **Agentic Workflows**: Moving from simple chat to autonomous agents that can perform tasks.
-
-### Key Drivers
-* Decreasing cost of inference for high-reasoning models.
-* Standardization of RAG (Retrieval-Augmented Generation) patterns.
-* Regulatory clarity in major markets (EU AI Act).
-
-### Strategic Recommendations
-Consider focusing on specialized security layers for autonomous agents in the B2B sector.
-          `,
-          sources: [
-            { title: 'Gartner 2026 AI Infrastructure Report', url: '#' },
-            { title: 'Forrester Wave: Conversational AI', url: '#' },
-            { title: 'TechCrunch: The Rise of the AI Agent', url: '#' }
-          ]
-        });
+        console.error('Failed to fetch finding', error);
       } finally {
         setIsLoading(false);
       }
@@ -63,13 +34,10 @@ Consider focusing on specialized security layers for autonomous agents in the B2
     e.preventDefault();
     if (!followUp) return;
     try {
-      await api.post('/api/research', { 
-        topic: `Follow up on "${finding.title}": ${followUp}`,
-        context_finding_id: id 
-      });
+      await submitResearch(`Follow up on "${finding.title}": ${followUp}`, null);
       navigate('/dashboard');
     } catch (error) {
-      navigate('/dashboard');
+      console.error('Failed to send follow up', error);
     }
   };
 

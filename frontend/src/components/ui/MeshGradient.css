@@ -1,0 +1,96 @@
+.mesh-gradient-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #120B1F; /* Slightly lighter deep purple base */
+  overflow: hidden;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.blob {
+  position: absolute;
+  filter: blur(100px);
+  border-radius: 50%;
+  opacity: 0.4;
+  will-change: transform;
+}
+
+.one {
+  width: 600px;
+  height: 600px;
+  background: linear-gradient(45deg, #4b0082, var(--accent-pink));
+  top: -10%;
+  left: -10%;
+  animation: move-one 25s infinite alternate ease-in-out;
+}
+
+.two {
+  width: 800px;
+  height: 800px;
+  background: linear-gradient(135deg, #9370db, #ff007a);
+  bottom: -20%;
+  right: -10%;
+  animation: move-two 30s infinite alternate ease-in-out;
+  opacity: 0.3;
+}
+
+.three {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, var(--accent-pink) 0%, transparent 70%);
+  top: 40%;
+  left: 30%;
+  animation: move-three 20s infinite alternate ease-in-out;
+  opacity: 0.25;
+}
+
+.four {
+  width: 700px;
+  height: 700px;
+  background: #483d8b;
+  top: 10%;
+  right: 20%;
+  animation: move-four 35s infinite alternate ease-in-out;
+  opacity: 0.2;
+}
+
+.five {
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  background: var(--accent-pink);
+  filter: blur(120px);
+  border-radius: 50%;
+  bottom: 20%;
+  left: 10%;
+  animation: move-five 15s infinite alternate ease-in-out;
+  opacity: 0.2;
+}
+
+@keyframes move-five {
+  from { transform: translate(0, 0) scale(0.8); }
+  to { transform: translate(10vw, -10vh) scale(1.2); }
+}
+
+@keyframes move-one {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(30vw, 20vh) scale(1.1); }
+}
+
+@keyframes move-two {
+  from { transform: translate(0, 0) scale(1.2); }
+  to { transform: translate(-25vw, -30vh) scale(1); }
+}
+
+@keyframes move-three {
+  from { transform: translate(0, 0) rotate(0deg); }
+  to { transform: translate(15vw, -15vh) rotate(90deg); }
+}
+
+@keyframes move-four {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(-20vw, 40vh) scale(1.3); }
+}

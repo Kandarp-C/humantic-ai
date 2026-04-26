@@ -1,5 +1,4 @@
 import axios from 'axios';
-import * as mockData from './mockData';
 
 const API_BASE_URL = 'http://localhost:8000';
 
@@ -22,39 +21,31 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response Interceptor: Handle 401 and Fallback to Mock Data
-api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    // If unauthorized, clear token and redirect (optional, handled by AuthContext usually)
-    if (error.response && error.response.status === 401) {
-      localStorage.removeItem('humantic_token');
-      // window.location.href = '/login'; 
-    }
+// Auth
+export const login = (email, password) => api.post('/api/auth/login', { email, password });
+export const signup = (email, password) => api.post('/api/auth/signup', { email, password });
 
-    // MOCK DATA FALLBACK LOGIC
-    // In a real project, you'd check if (process.env.NODE_ENV === 'development') 
-    // or if the error is a connection error (e.g. backend not running)
-    const { config } = error;
-    
-    if (!config || !error.response) {
-      console.warn(`Backend not reachable. Falling back to mock data for: ${config.url}`);
-      
-      if (config.url === '/api/findings' && config.method === 'get') {
-        return { data: mockData.mockFindings, status: 200 };
-      }
-      if (config.url === '/api/research' && config.method === 'get') {
-        return { data: mockData.mockTopics, status: 200 };
-      }
-      if (config.url === '/api/pins' && config.method === 'get') {
-        return { data: mockData.mockPins, status: 200 };
-      }
-      
-      // Add more fallbacks as needed
-    }
+// Onboarding
+export const completeOnboarding = (answer1, answer2, depthPreference) => 
+  api.post('/api/onboarding', { answer1, answer2, depth_preference: depthPreference });
 
-    return Promise.reject(error);
-  }
-);
+// Research
+export const submitResearch = (topic, goal) => api.post('/api/research', { topic, goal });
+export const getResearch = () => api.get('/api/research');
+
+// Findings
+export const getFindings = (topicId, category) => {
+  const params = {};
+  if (topicId) params.topic_id = topicId;
+  if (category) params.category = category;
+  return api.get('/api/findings', { params });
+};
+export const getFindingById = (id) => api.get(`/api/findings/${id}`);
+export const updateFinding = (id, status) => api.patch(`/api/findings/${id}`, { status });
+
+// Pins
+export const getPins = () => api.get('/api/pins');
+export const addPin = (description) => api.post('/api/pins', { description });
+export const deletePin = (id) => api.delete(`/api/pins/${id}`);
 
 export default api;

@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import GlassPanel from '../components/ui/GlassPanel';
 import { TextArea } from '../components/ui/Input';
 import Button from '../components/ui/Button';
-import api from '../services/api';
+import { completeOnboarding } from '../services/api';
 import './Onboarding.css';
 
 const Onboarding = () => {
@@ -27,12 +27,10 @@ const Onboarding = () => {
 
   const handleSubmit = async () => {
     try {
-      await api.post('/api/onboarding', formData);
+      await completeOnboarding(formData.answer1, formData.answer2, formData.depth_preference);
       navigate('/dashboard');
     } catch (error) {
       console.error('Onboarding failed', error);
-      // Fallback for mock environment
-      navigate('/dashboard');
     }
   };
 
@@ -111,15 +109,15 @@ const Onboarding = () => {
               <h2>How do you prefer your results?</h2>
               <div className="preference-cards">
                 <div 
-                  className={`pref-card ${formData.depth_preference === 'quick' ? 'selected' : ''}`}
-                  onClick={() => setFormData({...formData, depth_preference: 'quick'})}
+                  className={`pref-card ${formData.depth_preference === 'quick_summaries' ? 'selected' : ''}`}
+                  onClick={() => setFormData({...formData, depth_preference: 'quick_summaries'})}
                 >
                   <h3>Quick Summaries</h3>
                   <p>Concise, bulleted insights for fast scanning.</p>
                 </div>
                 <div 
-                  className={`pref-card ${formData.depth_preference === 'deep' ? 'selected' : ''}`}
-                  onClick={() => setFormData({...formData, depth_preference: 'deep'})}
+                  className={`pref-card ${formData.depth_preference === 'deep_dives' ? 'selected' : ''}`}
+                  onClick={() => setFormData({...formData, depth_preference: 'deep_dives'})}
                 >
                   <h3>Deep Dives</h3>
                   <p>Comprehensive reports with detailed source analysis.</p>

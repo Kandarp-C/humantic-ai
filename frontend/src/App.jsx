@@ -9,6 +9,8 @@ import Onboarding from './pages/Onboarding';
 import Dashboard from './pages/Dashboard';
 import FindingPage from './pages/FindingPage';
 import PinnedInterests from './pages/PinnedInterests';
+import MeshGradient from './components/ui/MeshGradient';
+import InteractiveNodes from './components/ui/InteractiveNodes';
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
@@ -22,6 +24,8 @@ const ProtectedRoute = ({ children }) => {
 function App() {
   return (
     <Router>
+      <MeshGradient />
+      <InteractiveNodes />
       <Navbar />
       <main>
         <Routes>

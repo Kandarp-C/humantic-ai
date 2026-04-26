@@ -1,3 +1,1 @@
-from app.routers import auth, onboarding, research, findings, pins, ws
-
-__all__ = ["auth", "onboarding", "research", "findings", "pins", "ws"]
+# Empty init to avoid circular imports

@@ -1,34 +1,106 @@
 .dashboard-page {
-  padding: 100px 24px 60px;
-  max-width: 1200px;
-  margin: 0 auto;
+  padding: 100px 0 60px;
   display: flex;
   flex-direction: column;
   gap: 48px;
 }
 
-.active-research-section h2, .findings-feed-section h2 {
-  font-size: 14px;
-  font-weight: 700;
+.input-section-container, .findings-section-container {
+  width: 100%;
+}
+
+.input-with-animations, .feed-with-animations {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+}
+
+.main-input-wrapper {
+  flex-shrink: 0;
+  width: 800px;
+  z-index: 5;
+  background: var(--glass);
+  backdrop-filter: var(--blur-glass);
+  border: 2px solid rgba(108, 99, 255, 0.8);
+  border-radius: 16px;
+  box-shadow: 0 0 35px rgba(108, 99, 255, 0.35), inset 0 0 15px rgba(108, 99, 255, 0.15);
+  transition: all 0.3s ease;
+}
+
+.main-input-wrapper:focus-within {
+  box-shadow: 0 0 50px rgba(108, 99, 255, 0.5), inset 0 0 20px rgba(108, 99, 255, 0.25);
+  border-color: rgba(147, 112, 219, 1);
+  transform: translateY(-4px);
+}
+
+.findings-feed-wrapper {
+  flex-shrink: 0;
+  width: 1200px;
+  padding: 0 24px;
+  z-index: 5;
+}
+
+.side-animation {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.section-title, .active-research-section h2 {
+  font-size: 16px;
+  font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--text-secondary);
+  letter-spacing: 0.2em;
+  color: #fff;
   margin-bottom: 24px;
+  text-shadow: 0 0 15px rgba(108, 99, 255, 0.6), 0 0 30px rgba(108, 99, 255, 0.3);
+  max-width: 1200px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 24px;
+}
+
+@media (max-width: 1024px) {
+  .hide-mobile {
+    display: none;
+  }
 }
 
 .topics-row {
   display: flex;
-  gap: 20px;
+  gap: 32px;
   overflow-x: auto;
-  padding: 4px 4px 20px;
-  scrollbar-width: thin;
-  scrollbar-color: var(--border-glass) transparent;
+  width: 100%;
+  padding: 40px 24px;
+  perspective: 1500px;
+  mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+  scrollbar-width: none;
+}
+
+@media (min-width: 1200px) {
+  .topics-row {
+    padding-left: calc((100% - 1200px) / 2 + 24px);
+    padding-right: calc((100% - 1200px) / 2 + 24px);
+  }
+}
+
+.topics-row::-webkit-scrollbar {
+  display: none;
 }
 
 .findings-feed {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
 }
 
 .empty-state {

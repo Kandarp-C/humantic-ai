@@ -9,6 +9,10 @@
   align-items: center;
   justify-content: center;
   transition: var(--transition);
+  border-bottom: 2px solid rgba(108, 99, 255, 0.9);
+  box-shadow: 0 4px 40px rgba(108, 99, 255, 0.3);
+  background: var(--glass);
+  backdrop-filter: var(--blur-navbar);
 }
 
 .navbar-inner {
@@ -58,7 +62,11 @@
 }
 
 .nav-link.active {
-  color: var(--accent-primary);
+  color: #fff !important;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 15px rgba(108, 99, 255, 1), 0 0 30px rgba(108, 99, 255, 0.6);
 }
 
 .nav-actions {

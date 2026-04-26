@@ -2,11 +2,12 @@
 
 :root {
   /* Colors */
-  --bg-primary: #0A0A0F;
-  --bg-surface: #12121A;
-  --bg-elevated: #1A1A2E;
+  --bg-primary: #0F0F1A; /* Slightly lighter deep blue */
+  --bg-surface: #181825;
+  --bg-elevated: #222235;
   --accent-primary: #6C63FF;
   --accent-secondary: #00D4AA;
+  --accent-pink: #FF007A; 
   --accent-warning: #FFB347;
   --accent-cyan: #00B4D8;
   --text-primary: #E8E8ED;
@@ -15,7 +16,7 @@
   --border-glass: rgba(255, 255, 255, 0.08);
   
   /* Glassmorphism */
-  --glass: rgba(18, 18, 26, 0.7);
+  --glass: rgba(24, 24, 37, 0.75);
   --glass-light: rgba(255, 255, 255, 0.04);
   --blur-glass: blur(16px);
   --blur-navbar: blur(20px);
@@ -30,11 +31,16 @@
   --radius-pill: 20px;
   
   /* Typography & Motion */
-  --font: 'Inter', sans-serif;
+  --font-main: 'Inter', sans-serif;
+  --font-title: 'Helvetica', 'Arial', sans-serif;
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ===== GLOBAL RESETS ===== */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-title);
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -48,7 +54,7 @@ html {
 body {
   background: var(--bg-primary);
   color: var(--text-primary);
-  font-family: var(--font);
+  font-family: var(--font-main);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.5;
@@ -65,13 +71,17 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--bg-surface);
+  background: linear-gradient(180deg, var(--accent-pink), var(--accent-primary));
   border-radius: 4px;
   border: 2px solid var(--bg-primary);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--bg-elevated);
+  filter: brightness(1.2);
+}
+
+.glow-text {
+  text-shadow: 0 0 10px rgba(255, 0, 122, 0.5), 0 0 20px rgba(108, 99, 255, 0.3);
 }
 
 /* For Firefox */

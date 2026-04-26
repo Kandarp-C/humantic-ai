@@ -6,7 +6,6 @@ from uuid import uuid4
 from app.tasks.celery_app import celery
 from app.services.supabase import supabase
 from app.services.gemini import call_gemini, build_subtopic_prompt, build_research_prompt, build_synthesis_prompt
-from app.routers.ws import push_to_user
 
 
 def _get_topic(topic_id: str) -> dict | None:
@@ -55,6 +54,7 @@ def _save_findings(findings: list[dict], topic_id: str, user_id: str, cycle: int
             "cycle_number": cycle,
         })
     if records:
+        from app.routers.ws import push_to_user
         supabase.table("findings").insert(records).execute()
         for record in records:
             try:

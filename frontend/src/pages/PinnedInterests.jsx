@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import GlassPanel from '../components/ui/GlassPanel';
 import Button from '../components/ui/Button';
 import { TextArea } from '../components/ui/Input';
-import api from '../services/api';
+import { getPins, addPin, deletePin } from '../services/api';
 import './PinnedInterests.css';
 
 const PinnedInterests = () => {
@@ -15,7 +15,7 @@ const PinnedInterests = () => {
   useEffect(() => {
     const fetchPins = async () => {
       try {
-        const response = await api.get('/api/pins');
+        const response = await getPins();
         setPins(response.data);
       } catch (error) {
         console.error('Failed to fetch pins', error);
@@ -31,25 +31,21 @@ const PinnedInterests = () => {
     e.preventDefault();
     if (!newPinDesc) return;
     try {
-      const response = await api.post('/api/pins', { description: newPinDesc });
+      const response = await addPin(newPinDesc);
       setPins([response.data, ...pins]);
       setNewPinDesc('');
       setIsModalOpen(false);
     } catch (error) {
-      // Mock update
-      const newPin = { id: Date.now().toString(), description: newPinDesc, lastChecked: 'Just now' };
-      setPins([newPin, ...pins]);
-      setNewPinDesc('');
-      setIsModalOpen(false);
+      console.error('Failed to add pin', error);
     }
   };
 
   const handleArchive = async (id) => {
     try {
-      await api.delete(`/api/pins/${id}`);
+      await deletePin(id);
       setPins(pins.filter(p => p.id !== id));
     } catch (error) {
-      setPins(pins.filter(p => p.id !== id));
+      console.error('Failed to delete pin', error);
     }
   };
 
