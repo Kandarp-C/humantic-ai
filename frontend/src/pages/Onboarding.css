@@ -1,0 +1,104 @@
+.onboarding-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-primary);
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.onboarding-card {
+  width: 100%;
+  max-width: 600px;
+  padding: 48px;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.step-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.step-content h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.preference-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.pref-card {
+  padding: 24px;
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px solid var(--border-glass);
+}
+
+.pref-card:hover {
+  background: var(--glass-light);
+  border-color: var(--text-secondary);
+}
+
+.pref-card.selected {
+  border-color: var(--accent-primary);
+  background: var(--glow-primary);
+  box-shadow: 0 0 20px var(--glow-primary);
+}
+
+.pref-card h3 {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.pref-card p {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.onboarding-footer {
+  margin-top: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.progress-dots {
+  display: flex;
+  gap: 8px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border-glass);
+  transition: var(--transition);
+}
+
+.dot.active {
+  background: var(--accent-primary);
+  box-shadow: 0 0 8px var(--accent-primary);
+  width: 24px;
+  border-radius: 4px;
+}
+
+@media (max-width: 600px) {
+  .preference-cards {
+    grid-template-columns: 1fr;
+  }
+}

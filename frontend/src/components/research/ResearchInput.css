@@ -1,0 +1,48 @@
+.research-input-container {
+  width: 100%;
+  padding: 24px;
+}
+
+.main-input .textarea-field {
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  min-height: 80px;
+  padding: 0;
+}
+
+.main-input .textarea-field:focus {
+  background: transparent;
+  box-shadow: none;
+}
+
+.goal-input {
+  margin-top: 16px;
+}
+
+.goal-input .input-field {
+  background: var(--glass-light);
+  border: 1px dashed var(--border-glass);
+}
+
+.input-actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-glass);
+}
+
+.add-goal-link {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.add-goal-link:hover {
+  color: var(--accent-primary);
+}
