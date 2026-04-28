@@ -1,130 +1,183 @@
 import json
 import time
-import asyncio
 from uuid import uuid4
-
+from google import genai
 from app.tasks.celery_app import celery
 from app.services.supabase import supabase
-from app.services.gemini import call_gemini, build_subtopic_prompt, build_research_prompt, build_synthesis_prompt
+from app.config import settings
+from app.models.enums import TopicStatus, FindingCategory, ConfidenceLevel, FindingStatus
+from app.services.gemini import generate_content_with_retry
 
+MODEL_NAME = "gemini-2.0-flash"
 
-def _get_topic(topic_id: str) -> dict | None:
-    response = supabase.table("research_topics").select("*").eq("id", topic_id).single().execute()
-    return response.data
+def _get_topic(topic_id: str):
+    res = supabase.table("research_topics").select("*, users(*)").eq("id", topic_id).single().execute()
+    return res.data
 
-
-def _get_user_profile(user_id: str) -> dict:
-    response = supabase.table("users").select("*").eq("id", user_id).single().execute()
-    return response.data or {}
-
-
-def _get_active_pins(user_id: str) -> list[str]:
-    response = (
-        supabase.table("pinned_interests")
-        .select("description")
-        .eq("user_id", user_id)
-        .eq("is_active", True)
-        .execute()
-    )
-    return [r["description"] for r in (response.data or [])]
-
-
-def _update_topic_status(topic_id: str, status: str, cycles_completed: int = 0, error: str | None = None):
-    payload = {"status": status, "cycles_completed": cycles_completed}
+def _update_topic_status(topic_id: str, status: str, cycles_completed: int = None, error: str = None):
+    data = {"status": status}
+    if cycles_completed is not None:
+        data["cycles_completed"] = cycles_completed
     if error:
-        payload["error_message"] = error
-    supabase.table("research_topics").update(payload).eq("id", topic_id).execute()
+        data["error_log"] = error
 
-
-def _save_findings(findings: list[dict], topic_id: str, user_id: str, cycle: int):
-    records = []
-    for f in findings:
-        records.append({
-            "id": str(uuid4()),
-            "topic_id": topic_id,
-            "user_id": user_id,
-            "title": f.get("title", "Untitled"),
-            "summary": f.get("summary", ""),
-            "full_analysis": f.get("full_analysis", ""),
-            "category": f.get("category", "deep_insight"),
-            "confidence": f.get("confidence", "medium"),
-            "sources": f.get("sources", []),
-            "why_this": f.get("why_this", ""),
-            "status": "new",
-            "cycle_number": cycle,
-        })
-    if records:
-        from app.routers.ws import push_to_user
-        supabase.table("findings").insert(records).execute()
-        for record in records:
-            try:
-                asyncio.run(push_to_user(user_id, {"type": "new_finding", "data": record}))
-            except Exception as e:
-                print(f"Failed to push finding to WS: {e}")
-    return records
-
-
-@celery.task(bind=True, max_retries=2, default_retry_delay=30)
-def run_research_cycle(self, topic_id: str):
     try:
-        topic = _get_topic(topic_id)
-        if not topic:
-            return
-
-        user_id = topic["user_id"]
-        profile = _get_user_profile(user_id)
-        pins = _get_active_pins(user_id)
-        domain = profile.get("domain", "professional")
-        depth = profile.get("depth_preference", "balanced")
-
-        _update_topic_status(topic_id, "researching")
-
-        subtopic_prompt = build_subtopic_prompt(
-            topic=topic["topic"],
-            goal=topic.get("goal"),
-            domain=domain,
-            depth=depth,
-            pins=pins,
-        )
-        subtopic_raw = call_gemini(subtopic_prompt)
-        subtopics_data = json.loads(subtopic_raw)
-        subtopics = subtopics_data.get("subtopics", [])
-
-        raw_results = []
-        for item in subtopics[:6]:
-            question = item.get("question", "")
+        supabase.table("research_topics").update(data).eq("id", topic_id).execute()
+    except Exception as e:
+        if "error_log" in data and "Could not find the 'error_log' column" in str(e):
+            del data["error_log"]
             try:
-                research_prompt = build_research_prompt(
-                    subtopic=question,
-                    topic=topic["topic"],
-                    domain=domain,
-                    depth=depth,
-                )
-                result = call_gemini(research_prompt)
-                raw_results.append({"subtopic": question, "content": result})
-                time.sleep(1)
+                supabase.table("research_topics").update(data).eq("id", topic_id).execute()
             except Exception:
-                continue
+                pass
+        
+    from app.routers.ws import push_to_user
+    import asyncio
+    
+    # Notify frontend of topic status change
+    topic = _get_topic(topic_id)
+    if topic:
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                loop.create_task(push_to_user(topic["user_id"], {"type": "topic_updated", "data": topic}))
+            else:
+                asyncio.run(push_to_user(topic["user_id"], {"type": "topic_updated", "data": topic}))
+        except Exception:
+            pass
 
-        if not raw_results:
-            _update_topic_status(topic_id, "failed", error="No research results generated")
-            return
+@celery.task(bind=True, max_retries=3)
+def run_research_cycle(self, topic_id: str):
+    topic = _get_topic(topic_id)
+    if not topic:
+        return f"Topic {topic_id} not found"
 
-        synthesis_prompt = build_synthesis_prompt(
-            raw_results=raw_results,
-            topic=topic["topic"],
-            goal=topic.get("goal"),
-            domain=domain,
+    _update_topic_status(topic_id, "researching")
+
+    try:
+        user_profile = topic.get("users", {})
+        domain = user_profile.get("domain", "general")
+        depth = user_profile.get("depth_preference", "balanced")
+
+        prompt = f"""
+You are a research assistant. Research this topic and return ONLY 
+valid JSON with no markdown, no backticks, no explanation, no other text.
+Just the raw JSON object.
+
+Topic: {topic['topic']}
+User domain: {domain}
+Goal: {topic.get('goal', 'General exploration')}
+
+Return exactly this JSON structure:
+{{
+  "findings": [
+    {{
+      "title": "...",
+      "summary": "2-3 sentence summary of this finding",
+      "category": "deep_insight",
+      "confidence": "high",
+      "why_this": "1-2 sentence explanation of why this is relevant to the user",
+      "sources": ["Source Name 1", "Source Name 2"]
+    }}
+  ]
+}}
+
+Generate exactly 4 findings. 
+Categories must be one of: deep_insight, trend, opportunity, experimental
+Use a different category for each finding.
+Confidence must be one of: high, medium, speculative.
+Return ONLY the JSON. No other text whatsoever.
+"""
+        time.sleep(2)
+        response = generate_content_with_retry(
+            model=MODEL_NAME, 
+            contents=prompt, 
+            config={
+                'response_mime_type': 'application/json',
+                'tools': [{'google_search': {}}]
+            }
         )
-        synthesis_raw = call_gemini(synthesis_prompt)
-        synthesis_data = json.loads(synthesis_raw)
-        findings = synthesis_data.get("findings", [])
+        
+        raw_text = response.text.strip()
+        if raw_text.startswith("```json"):
+            raw_text = raw_text[7:]
+        elif raw_text.startswith("```"):
+            raw_text = raw_text[3:]
+        if raw_text.endswith("```"):
+            raw_text = raw_text[:-3]
+        raw_text = raw_text.strip()
 
-        saved = _save_findings(findings, topic_id, user_id, cycle=1)
+        try:
+            data = json.loads(raw_text)
+        except json.JSONDecodeError as e:
+            _update_topic_status(topic_id, "failed", error=f"JSON parsing failed. Raw response: {raw_text}")
+            return f"Failed to parse JSON for {topic_id}"
+        
+        findings = []
+        for finding_data in data.get("findings", []):
+            finding_record = {
+                "id": str(uuid4()),
+                "topic_id": topic_id,
+                "user_id": topic["user_id"],
+                "title": finding_data.get("title", "Untitled"),
+                "summary": finding_data.get("summary", ""),
+                "full_analysis": finding_data.get("full_analysis", ""),
+                "category": finding_data.get("category", "deep_insight"),
+                "confidence": finding_data.get("confidence", "medium"),
+                "sources": [{"url": s, "title": s} if isinstance(s, str) else s for s in finding_data.get("sources", [])],
+                "why_this": finding_data.get("why_this", ""),
+                "status": "new"
+            }
+            supabase.table("findings").insert(finding_record).execute()
+            findings.append(finding_record)
+            
+            # Immediately push finding to user via WebSocket
+            from app.routers.ws import push_to_user
+            import asyncio
+            try:
+                loop = asyncio.get_event_loop()
+                if loop.is_running():
+                    loop.create_task(push_to_user(topic["user_id"], {"type": "new_finding", "data": finding_record}))
+                else:
+                    asyncio.run(push_to_user(topic["user_id"], {"type": "new_finding", "data": finding_record}))
+            except Exception:
+                pass
+
         _update_topic_status(topic_id, "completed", cycles_completed=1)
+        return f"Research cycle completed for {topic_id}. Generated {len(findings)} findings."
 
-        return {"topic_id": topic_id, "findings_count": len(saved)}
+    except Exception as e:
+        _update_topic_status(topic_id, "failed", error=str(e))
+        return f"Failed {topic_id}: {str(e)}"
 
-    except Exception as exc:
-        _update_topic_status(topic_id, "failed", error=str(exc))
-        raise self.retry(exc=exc)
+@celery.task
+def refresh_pinned_interests():
+    """
+    Runs every 6 hours. For each active pinned interest across all users:
+    1. Creates a new research topic record with the pin description as the query
+    2. Runs the research pipeline on it (same as run_research_cycle)
+    3. Pushes findings via WebSocket to the user
+    4. Updates the pin's last_checked_at timestamp
+    """
+    # Fetch all active pins from Supabase (is_active = true)
+    pins = supabase.table("pinned_interests").select("*, users(*)").eq("is_active", True).execute()
+    
+    from datetime import datetime
+    for pin in pins.data:
+        # Create a new research topic for this pin
+        topic = supabase.table("research_topics").insert({
+            "user_id": pin["user_id"],
+            "topic": f"[Auto-refresh] {pin['description']}",
+            "goal": "Find what's new or changed since last check",
+            "status": "pending",
+            "source": "pin_refresh",
+            "is_auto_refresh": True
+        }).execute()
+        
+        # Run research on it
+        run_research_cycle.delay(topic.data[0]["id"])
+        
+        # Update pin's last checked timestamp
+        supabase.table("pinned_interests").update({
+            "last_refreshed_at": datetime.utcnow().isoformat()
+        }).eq("id", pin["id"]).execute()

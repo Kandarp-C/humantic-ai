@@ -116,7 +116,7 @@ class ResearchTopicResponse(BaseModel):
     goal:             Optional[str]  = None
     status:           TopicStatus
     cycles_completed: int            = 0
-    max_cycles:       int            = 3
+    max_cycles:       int            = 1
     error_message:    Optional[str]  = None
     created_at:       datetime
     updated_at:       datetime

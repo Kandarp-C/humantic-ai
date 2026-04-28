@@ -37,8 +37,10 @@ const WhyThis = ({ reasoning }) => {
   );
 };
 
-const FindingCard = ({ finding, onApprove, onDismiss }) => {
-  const { category, confidence, title, summary, sourceCount, timestamp, reasoning } = finding;
+const FindingCard = ({ finding, isAutoRefresh, onApprove, onDismiss }) => {
+  const { category, confidence, title, summary, sources, sourceCount, timestamp, reasoning, why_this } = finding;
+  const displaySourceCount = sourceCount ?? sources?.length ?? 0;
+  const displayReasoning = reasoning || why_this;
 
   return (
     <motion.div
@@ -48,14 +50,19 @@ const FindingCard = ({ finding, onApprove, onDismiss }) => {
       exit={{ x: -50, opacity: 0 }}
       transition={{ type: 'spring', damping: 20, stiffness: 100 }}
     >
-      <GlassPanel className={`finding-card ${category.toLowerCase()}`}>
+      <GlassPanel className={`finding-card ${category?.toLowerCase() || 'deep_insight'}`}>
         <div className="card-header">
           <div className="header-left">
-            <Badge category={category}>{category}</Badge>
+            <Badge category={category || 'deep_insight'}>{category || 'deep_insight'}</Badge>
             <div className="confidence-wrapper">
-              <ConfidenceDot level={confidence} />
-              <span className="confidence-label">{confidence}</span>
+              <ConfidenceDot level={confidence || 'medium'} />
+              <span className="confidence-label">{confidence || 'medium'}</span>
             </div>
+            {isAutoRefresh && (
+              <span style={{ fontSize: '0.75rem', background: 'rgba(255,255,255,0.1)', padding: '2px 8px', borderRadius: '12px', marginLeft: '8px' }}>
+                🔄 Auto-refreshed
+              </span>
+            )}
           </div>
           <div className="timestamp">{timestamp}</div>
         </div>
@@ -68,7 +75,7 @@ const FindingCard = ({ finding, onApprove, onDismiss }) => {
         <div className="card-footer">
           <div className="sources">
             <span className="source-icon">📄</span>
-            {sourceCount} sources
+            {displaySourceCount} sources
           </div>
           <div className="card-actions">
             <button className="action-btn dismiss" onClick={() => onDismiss(finding.id)}>✕</button>
@@ -76,7 +83,7 @@ const FindingCard = ({ finding, onApprove, onDismiss }) => {
           </div>
         </div>
 
-        <WhyThis reasoning={reasoning} />
+        <WhyThis reasoning={displayReasoning} />
       </GlassPanel>
     </motion.div>
   );

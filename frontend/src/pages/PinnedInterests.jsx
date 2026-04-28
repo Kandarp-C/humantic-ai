@@ -11,6 +11,7 @@ const PinnedInterests = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newPinDesc, setNewPinDesc] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [toast, setToast] = useState(null);
 
   useEffect(() => {
     const fetchPins = async () => {
@@ -35,6 +36,8 @@ const PinnedInterests = () => {
       setPins([response.data, ...pins]);
       setNewPinDesc('');
       setIsModalOpen(false);
+      setToast('Interest pinned successfully!');
+      setTimeout(() => setToast(null), 3000);
     } catch (error) {
       console.error('Failed to add pin', error);
     }
@@ -67,9 +70,23 @@ const PinnedInterests = () => {
               exit={{ opacity: 0, scale: 0.95 }}
             >
               <GlassPanel className="pin-card">
-                <div className="pin-info">
-                  <span className="pin-description">{pin.description}</span>
-                  <span className="pin-meta">Last checked {pin.lastChecked}</span>
+                <div className="pin-info" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span className="pin-description" style={{ fontWeight: 'bold' }}>{pin.description}</span>
+                    {pin.auto_created && (
+                      <span style={{ background: 'rgba(255,255,255,0.1)', padding: '2px 8px', borderRadius: '12px', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
+                        🤖 Auto-detected
+                      </span>
+                    )}
+                  </div>
+                  {pin.auto_created && pin.auto_reason && (
+                    <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                      {pin.auto_reason}
+                    </span>
+                  )}
+                  <span className="pin-meta" style={{ marginTop: '4px' }}>
+                    Last checked {pin.last_refreshed_at ? new Date(pin.last_refreshed_at).toLocaleString() : 'Never'}
+                  </span>
                 </div>
                 <div className="pin-actions">
                   <Button variant="ghost" size="small" onClick={() => handleArchive(pin.id)}>Archive</Button>
@@ -115,6 +132,24 @@ const PinnedInterests = () => {
               </GlassPanel>
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {toast && (
+          <motion.div 
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            style={{ 
+              position: 'fixed', bottom: '20px', right: '20px', 
+              background: 'var(--accent-primary)', color: 'white', 
+              padding: '16px 24px', borderRadius: '8px', zIndex: 1000, 
+              boxShadow: '0 4px 12px rgba(0,0,0,0.3)', maxWidth: '400px' 
+            }}
+          >
+            {toast}
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

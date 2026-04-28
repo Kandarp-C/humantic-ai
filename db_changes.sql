@@ -1,0 +1,7 @@
+ALTER TABLE research_topics ADD COLUMN IF NOT EXISTS error_log TEXT;
+ALTER TABLE research_topics ADD COLUMN IF NOT EXISTS is_auto_refresh BOOLEAN DEFAULT FALSE;
+ALTER TABLE research_topics ADD COLUMN IF NOT EXISTS source TEXT;
+
+ALTER TABLE pinned_interests ADD COLUMN IF NOT EXISTS auto_created BOOLEAN DEFAULT FALSE;
+ALTER TABLE pinned_interests ADD COLUMN IF NOT EXISTS auto_reason TEXT;
+ALTER TABLE pinned_interests ADD COLUMN IF NOT EXISTS last_refreshed_at TIMESTAMPTZ;

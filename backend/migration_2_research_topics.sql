@@ -1,0 +1,1 @@
+"alter table research_topics add column if not exists triggered_by text default 'user';\nalter table research_topics add column if not exists trigger_phrase text;\n"

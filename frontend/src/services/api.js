@@ -48,4 +48,10 @@ export const getPins = () => api.get('/api/pins');
 export const addPin = (description) => api.post('/api/pins', { description });
 export const deletePin = (id) => api.delete(`/api/pins/${id}`);
 
+// Chat
+export const getChatSessions = () => api.get('/api/sessions');
+export const createChatSession = () => api.post('/api/sessions');
+export const getChatMessages = (sessionId) => api.get(`/api/sessions/${sessionId}/messages`);
+export const sendChatMessage = (sessionId, content) => api.post(`/api/sessions/${sessionId}/messages`, { content });
+
 export default api;

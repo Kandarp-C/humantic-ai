@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import auth, onboarding, research, findings, pins, ws
+from app.routers import auth, onboarding, research, findings, pins, ws, chat
 
 app = FastAPI(title="Humantic AI", version="0.1.0")
 
@@ -18,6 +18,7 @@ app.include_router(onboarding.router, prefix="/api", tags=["Onboarding"])
 app.include_router(research.router, prefix="/api", tags=["Research"])
 app.include_router(findings.router, prefix="/api", tags=["Findings"])
 app.include_router(pins.router, prefix="/api", tags=["Pins"])
+app.include_router(chat.router, prefix="/api", tags=["Chat"])
 app.include_router(ws.router, tags=["WebSocket"])
 
 

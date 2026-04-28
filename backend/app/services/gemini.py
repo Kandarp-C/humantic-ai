@@ -1,12 +1,45 @@
+import os
+import time
+import itertools
 import google.genai as genai
+from google.genai.errors import APIError
 from app.config import settings
 
-client = genai.Client(api_key=settings.gemini_api_key)
 MODEL = "gemini-2.5-flash"
 
+keys = []
+for k in ["GEMINI_API_KEY_1", "GEMINI_API_KEY_2", "GEMINI_API_KEY_3"]:
+    val = os.environ.get(k)
+    if val:
+        keys.append(val)
+if not keys:
+    keys.append(settings.gemini_api_key)
+
+key_cycle = itertools.cycle(keys)
+
+def generate_content_with_retry(model: str, contents, config: dict = None):
+    max_retries = 3
+    last_err = None
+    for attempt in range(max_retries):
+        current_key = next(key_cycle)
+        client = genai.Client(api_key=current_key)
+        try:
+            return client.models.generate_content(
+                model=model,
+                contents=contents,
+                config=config
+            )
+        except Exception as e:
+            last_err = e
+            if "429" in str(e):
+                if attempt < max_retries - 1:
+                    time.sleep(3)
+                    continue
+            raise e
+    raise last_err
 
 def call_gemini(prompt: str) -> str:
-    response = client.models.generate_content(model="gemini-2.5-flash", contents=prompt)
+    response = generate_content_with_retry(model="gemini-2.5-flash", contents=prompt)
     print(f"DEBUG: Gemini Response Object: {response}")
     
     text = ""

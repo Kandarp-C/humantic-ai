@@ -1,0 +1,2 @@
+"create table conversations (\n  id uuid default gen_random_uuid() primary key,\n  user_id uuid references auth.users(id) on delete cascade,\n  session_id uuid not null,\n  role text not null check (role in ('user', 'assistant')),\n  content text not null,
+<truncated 114 bytes>
