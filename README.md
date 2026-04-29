@@ -184,4 +184,4 @@ It’s a system that:
 observes
 learns
 adapts
-and acts for you
+and acts for you.
