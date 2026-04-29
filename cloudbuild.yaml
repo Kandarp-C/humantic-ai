@@ -52,19 +52,16 @@ steps:
     args:
       - 'run'
       - 'deploy'
-      - 'humantic-frontend'
+      - 'humantic-ai'
       - '--image'
       - 'gcr.io/$PROJECT_ID/humantic-frontend'
       - '--region'
-      - 'us-central1'
+      - 'europe-west1'
       - '--platform'
       - 'managed'
       - '--allow-unauthenticated'
       - '--port'
       - '5173'
-      # Set the backend URL for the frontend
-      # - '--set-env-vars'
-      # - 'VITE_API_URL=https://humantic-backend-xyz.run.app'
     id: 'deploy-frontend'
 
 images:
